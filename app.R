@@ -26,8 +26,20 @@ ui <- fluidPage(
 
 
 server <- function(input, output){
+  ####### Code to load the blocks of text based on what is selected in the UI. ######
+  
+  # Code to load the text from files will go here.
+  
+  # This list currently contains dummy text but will later have what is loaded from above
+  text_samples <- list(
+    chance_for_peace = "text of the cross of iron speech",
+    gettysburg_address = "text of the gettysburg address",
+    declaration_of_independence = "text from the declaration"
+  )
+
+    ###### Text output widget. ######
   output$text_choice <- renderText({
-    input$text_select
+    text_samples[[input$text_select]]
   }) 
   
 }
