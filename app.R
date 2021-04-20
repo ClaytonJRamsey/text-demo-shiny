@@ -25,35 +25,38 @@ ui <- fluidPage(
                 value = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed turpis diam, pretium quis felis a, congue varius justo. Etiam sollicitudin ex et pretium varius.")
     ),
     mainPanel(
-      h3("Analysis Results:"),
-      p("Text Chosen:"),
-      textOutput("text_choice"),
-      textOutput("custom_text")
+      h2("Analysis Results:"),
+      h4("Text Chosen:"),
+      textOutput("text_choice")
     )
   )
 )
 
 
 server <- function(input, output){
-
-  rvar_storage <- reactiveValues(
-    custom_text = character()
-  )
   
   text_samples <- list(
     chance_for_peace = readtext("cfp.txt")$text,
     gettysburg_address = readtext("ga.txt")$text,
     declaration_of_independence = readtext("doi.txt")$text
   )
-  rvar_storage$custom_text <- renderText({input$custom})
+  
+###### Main Observer ######
+observe({
 
   ###### Text output widget. ######
-    output$text_choice <- renderText({
+  if(input$text_select == "custom"){
+    output$text_choice <- renderText(input$custom)
+  }
+  if(input$text_select != "custom"){
+    output$text_choice <- renderText(
       text_samples[[input$text_select]]
-  }) 
-    #output$custom_text <- renderText(rvar_storage$custom_text)
-  output$custom_text <- renderText(input$custom)
+    )
+  }
   
+    
+})
+ 
 }
 
 shinyApp(ui = ui, server = server)
