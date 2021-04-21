@@ -27,9 +27,9 @@ ui <- fluidPage(
     ),
     mainPanel(
       h2("Analysis Results:"),
+      plotOutput("wordlengths_plot"),
       h4("Text Chosen:"),
-      textOutput("text_choice"),
-      plotOutput("wordlengths")
+      textOutput("text_choice")
     )
   )
 )
@@ -97,7 +97,7 @@ observe({
   
   internal_vars <- reactiveValues()
   internal_vars$text_selection <- character()
-  internal_vars$word_data <- list()
+  internal_vars$word_lengths <- character()
   
   ###### Text output widget. ######
   if(input$text_select == "custom"){
@@ -108,9 +108,9 @@ observe({
   }
   output$text_choice <- internal_vars$text_selection
    
-  internal_vars$word_data <- word_data(internal_vars$text_selection())
+  internal_vars$word_lengths <- word_data(internal_vars$text_selection())$wordlengths
   
-  #output$wordlengths <- renderPlot(hist(internal_vars[[word_data]][[wordlengths]]))
+  output$wordlengths_plot <- renderPlot(hist(internal_vars$word_lengths))
   })
 ###### End of Main Observer ######
  
