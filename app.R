@@ -2,6 +2,7 @@
 
 library(shiny)
 library(readtext)
+source("worddata.R")
 
 ui <- fluidPage(
   titlePanel("Letter Following Frequency Demo"),
@@ -43,19 +44,23 @@ server <- function(input, output){
   
 ###### Main Observer ######
 observe({
-
+  
+  internal_vars <- reactiveValues()
+  internal_vars$text_selection <- character()
+  internal_vars$word_data <- list()
+  
   ###### Text output widget. ######
   if(input$text_select == "custom"){
-    output$text_choice <- renderText(input$custom)
+    internal_vars$text_selection <- renderText(input$custom)
   }
   if(input$text_select != "custom"){
-    output$text_choice <- renderText(
-      text_samples[[input$text_select]]
-    )
+    internal_vars$text_selection <- renderText(text_samples[[input$text_select]])
   }
-  
-    
+  output$text_choice <- internal_vars$text_selection
+   
+  #internal_vars$word_data <- word_data(renderText(internal_vars$text_selection))
 })
+###### End of Main Observer ######
  
 }
 
