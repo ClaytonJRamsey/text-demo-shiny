@@ -1,3 +1,5 @@
+library(ggplot2)
+
 word_data <- function(text){
   # break the text into characters
   rawcharacters <- strsplit(text, "")[[1]]
@@ -42,4 +44,21 @@ word_data <- function(text){
   }
   following[["wordlengths"]] <- wordlengths
   return(following)
+}
+
+tx_report_graph <- function(report){
+  list_of_plots <- list()
+  
+  for(lett in letters){
+    entry <- report[[lett]]
+    entry <- entry[which(entry != " ")]
+    if(length(entry)>0){
+      list_of_plots[[lett]] <- ggplot(data.frame(entry = entry), aes(x = entry)) + geom_bar()
+      }
+  }
+  list_of_plots[["beginning"]] <- ggplot(data.frame(beginning = report[["beginning"]]), aes(x = beginning)) + geom_bar()
+  list_of_plots[["ending"]] <- ggplot(data.frame(ending = report[["ending"]]), aes(x = ending)) + geom_bar()
+  list_of_plots[["wordlengths"]] <- hist(report$wordlengths, main = "Histogram of Word Lengths", xlab = "Word Length")
+  
+  return(list_of_plots)
 }

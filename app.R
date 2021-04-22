@@ -2,8 +2,10 @@
 
 library(shiny)
 library(readtext)
+library(ggplot2)
 #source("worddata.R")
 
+###### UI ######
 ui <- fluidPage(
   titlePanel("Letter Following Frequency Demo"),
   sidebarLayout(
@@ -23,11 +25,24 @@ ui <- fluidPage(
                    ),
       textInput(inputId = "custom",
                 label = "Enter the custom text here:",
-                value = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed turpis diam, pretium quis felis a, congue varius justo. Etiam sollicitudin ex et pretium varius.")
+                value = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed turpis diam, pretium quis felis a, congue varius justo. Etiam sollicitudin ex et pretium varius."),
+      selectInput(inputId = "graph_display",
+                  label = "Select the output to display:",
+                  choices = c("wordlengths",
+                              "a",
+                              "b",
+                              "c",
+                              "d",
+                              "e",
+                              "beginning",
+                              "ending"
+                              ),
+                  selected = "ending"
+      )
     ),
     mainPanel(
       h2("Analysis Results:"),
-      plotOutput("wordlengths_plot"),
+      plotOutput("word_plot"),
       h4("Text Chosen:"),
       textOutput("text_choice")
     )
@@ -83,7 +98,24 @@ server <- function(input, output){
     following[["wordlengths"]] <- wordlengths
     return(following)
   }
-###### End of Word Data Function ######
+  
+###### A function to create barplots and histograms ######
+  report_graph <- function(report){
+    list_of_plots <- list()
+    
+    for(lett in letters){
+      entry <- report[[lett]]
+      entry <- entry[which(entry != " ")]
+      if(length(entry)>0){
+        list_of_plots[[lett]] <- ggplot(data.frame(entry = entry), aes(x = entry)) + geom_bar()
+      }
+    }
+    list_of_plots[["beginning"]] <- ggplot(data.frame(beginning = report[["beginning"]]), aes(x = beginning)) + geom_bar()
+    list_of_plots[["ending"]] <- ggplot(data.frame(ending = report[["ending"]]), aes(x = ending)) + geom_bar()
+    list_of_plots[["wordlengths"]] <- hist(report$wordlengths, main = "Histogram of Word Lengths", xlab = "Word Length")
+    
+    return(list_of_plots)
+  }
   
 ###### Importing the prepared texts ######  
   text_samples <- list(
@@ -107,15 +139,14 @@ observe({
     internal_vars$text_selection <- renderText(text_samples[[input$text_select]])
   }
   output$text_choice <- internal_vars$text_selection
-   
-  internal_vars$word_lengths <- word_data(internal_vars$text_selection())$wordlengths
   
-  output$wordlengths_plot <- renderPlot(hist(internal_vars$word_lengths))
+  ###### The plot ###### 
+  internal_vars$word_lengths <- word_data(internal_vars$text_selection())[["wordlengths"]]
+  
+  #output$word_plot <- renderPlot(hist(internal_vars$word_lengths))
+  output$word_plot <- renderPlot(report_graph(word_data(internal_vars$text_selection()))[[input$graph_display]])
   })
-###### End of Main Observer ######
  
 }
-
-
 
 shinyApp(ui = ui, server = server)
