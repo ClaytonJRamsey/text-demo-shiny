@@ -26,18 +26,19 @@ ui <- fluidPage(
       textInput(inputId = "custom",
                 label = "Enter the custom text here:",
                 value = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed turpis diam, pretium quis felis a, congue varius justo. Etiam sollicitudin ex et pretium varius."),
+      
       selectInput(inputId = "graph_display",
                   label = "Select the output to display:",
-                  choices = c("wordlengths",
+                  choices = c("Lengths of words" = "wordlengths",
+                              "Beginning letters" = "beginning",
+                              "Ending letters" = "ending",
                               "a",
                               "b",
                               "c",
                               "d",
-                              "e",
-                              "beginning",
-                              "ending"
+                              "e"
                               ),
-                  selected = "ending"
+                  selected = "beginning"
       )
     ),
     mainPanel(
@@ -99,7 +100,7 @@ server <- function(input, output){
     return(following)
   }
   
-###### A function to create barplots and histograms ######
+###### A function to create chart outputs ######
   report_graph <- function(report){
     list_of_plots <- list()
     
@@ -107,13 +108,20 @@ server <- function(input, output){
       entry <- report[[lett]]
       entry <- entry[which(entry != " ")]
       if(length(entry)>0){
-        list_of_plots[[lett]] <- ggplot(data.frame(entry = entry), aes(x = entry)) + geom_bar()
+        list_of_plots[[lett]] <- ggplot(data.frame(entry = entry), aes(x = entry)) + geom_bar() +
+                                        labs(title = paste0("Letters Following", " ", '"', lett, '"')) +
+                                        xlab(paste0("Following letter"))
       }
     }
-    list_of_plots[["beginning"]] <- ggplot(data.frame(beginning = report[["beginning"]]), aes(x = beginning)) + geom_bar()
-    list_of_plots[["ending"]] <- ggplot(data.frame(ending = report[["ending"]]), aes(x = ending)) + geom_bar()
-    list_of_plots[["wordlengths"]] <- hist(report$wordlengths, main = "Histogram of Word Lengths", xlab = "Word Length")
-    
+    list_of_plots[["beginning"]] <- ggplot(data.frame(beginning = report[["beginning"]]),
+                                           aes(x = beginning)) + geom_bar() + 
+                                           labs(title = "Beginning Letter Frequency")
+    list_of_plots[["ending"]] <- ggplot(data.frame(ending = report[["ending"]]), 
+                                        aes(x = ending)) + geom_bar() +
+                                        labs(title = "Ending Letter Frequency")
+    list_of_plots[["wordlengths"]] <- ggplot(data.frame(wordlengths = report[["wordlengths"]]), 
+                                             aes(x = wordlengths)) + geom_bar() +
+                                             labs(title = "Word Length Frequency")
     return(list_of_plots)
   }
   
@@ -143,7 +151,6 @@ observe({
   ###### The plot ###### 
   internal_vars$word_lengths <- word_data(internal_vars$text_selection())[["wordlengths"]]
   
-  #output$word_plot <- renderPlot(hist(internal_vars$word_lengths))
   output$word_plot <- renderPlot(report_graph(word_data(internal_vars$text_selection()))[[input$graph_display]])
   })
  
