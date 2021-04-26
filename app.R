@@ -36,16 +36,41 @@ ui <- fluidPage(
                               "b",
                               "c",
                               "d",
-                              "e"
+                              "e",
+                              "f",
+                              "g",
+                              "h",
+                              "i",
+                              "j",
+                              "k",
+                              "l",
+                              "m",
+                              "n",
+                              "o",
+                              "p",
+                              "q",
+                              "r",
+                              "s",
+                              "t",
+                              "u",
+                              "v",
+                              "w",
+                              "x",
+                              "y",
+                              "z"
                               ),
                   selected = "beginning"
       )
     ),
     mainPanel(
-      h2("Analysis Results:"),
-      plotOutput("word_plot"),
-      h4("Text Chosen:"),
-      textOutput("text_choice")
+      tabsetPanel(type = "pills",
+                  tabPanel("Text and Plots",
+                           h2("Analysis Results:"),
+                           plotOutput("word_plot"),
+                           h4("Text Chosen:"),
+                           textOutput("text_choice")
+                  ),
+                  tabPanel("Randomly Generated Text"))
     )
   )
 )
@@ -84,8 +109,11 @@ server <- function(input, output){
     beginlocations <- beginlocationsraw[1:(beginlength-1)]
     # and this chops off the first space.
     endlocations <- endlocationsraw[2:(beginlength)]
-    following[["beginning"]] <- lettersandwhitespace[beginlocations]
-    following[["ending"]] <- lettersandwhitespace[endlocations]
+    # Removing the phantom words caused by multiple spaces.
+    beginning <- lettersandwhitespace[beginlocations]
+    ending <- lettersandwhitespace[endlocations]
+    following[["beginning"]] <- beginning[which(beginning != " ")]
+    following[["ending"]] <- ending[which(ending != " ")]
     for(i in letters){
       following[[i]] <- lettersandwhitespace[1+which(lettersandwhitespace == i)]
     }
@@ -94,9 +122,10 @@ server <- function(input, output){
     spaceloop <- length(spacelocations)-1
     wordlengths <- vector("numeric", spaceloop)
     for(i in 1:spaceloop){
+      temp_length <- spacelocations[i+1] - spacelocations[i] - 1
       wordlengths[i] <- spacelocations[i+1] - spacelocations[i] - 1
     }
-    following[["wordlengths"]] <- wordlengths
+    following[["wordlengths"]] <- wordlengths[which(wordlengths != 0)] # to remove zero length words caused by extra spaces
     return(following)
   }
   

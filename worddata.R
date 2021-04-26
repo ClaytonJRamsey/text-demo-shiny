@@ -1,5 +1,6 @@
 library(ggplot2)
 
+sample_text_2 <- "the  spaces  are  all  doubled"
 sample_text <- 
   "5. The enforcement of all these agreed limitations and prohibitions by adequate safeguards, including a practical system of inspection under the United Nations.
 The details of such disarmament programs are manifestly critical and  complex. Neither the United States nor any other nation can properly claim to possess a perfect, immutable formula. But the formula matters less than the faith—the good faith without which no formula can work justly and effectively.
@@ -59,8 +60,10 @@ word_data <- function(text){
   beginlocations <- beginlocationsraw[1:(beginlength-1)]
   # and this chops off the first space.
   endlocations <- endlocationsraw[2:(beginlength)]
-  following[["beginning"]] <- lettersandwhitespace[beginlocations]
-  following[["ending"]] <- lettersandwhitespace[endlocations]
+  beginning <- lettersandwhitespace[beginlocations]
+  ending <- lettersandwhitespace[endlocations]
+  following[["beginning"]] <- beginning[which(beginning != " ")]
+  following[["ending"]] <- ending[which(ending != " ")]
   for(i in letters){
     following[[i]] <- lettersandwhitespace[1+which(lettersandwhitespace == i)]
   }
@@ -69,9 +72,10 @@ word_data <- function(text){
   spaceloop <- length(spacelocations)-1
   wordlengths <- vector("numeric", spaceloop)
   for(i in 1:spaceloop){
-    wordlengths[i] <- spacelocations[i+1] - spacelocations[i] - 1
+    temp_length <- spacelocations[i+1] - spacelocations[i] - 1
+      wordlengths[i] <- spacelocations[i+1] - spacelocations[i] - 1
   }
-  following[["wordlengths"]] <- wordlengths
+  following[["wordlengths"]] <- wordlengths[which(wordlengths != 0)] # to remove zero length words caused by extra spaces
   return(following)
 }
 
