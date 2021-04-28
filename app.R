@@ -64,13 +64,38 @@ ui <- fluidPage(
     ),
     mainPanel(
       tabsetPanel(type = "pills",
+                  tabPanel("Information",
+                           h2("App Information"),
+                           p("This app demonstrates a text processing algorithm I wrote. Having known for a long time
+                             about the distribution of letters in English and how this could be used, I became
+                             interested in the frequency at which letters followed other letters."),
+                           p("The 'Text and Plots' tab lets the user select from built in texts or 
+                             enter custom text. The plots it displays include the
+                             frequency of beginning letters, the frequency of ending letters, the lengths
+                             of words, and the letters that follow any given letter in words."),
+                           p("The 'Randomly Generated Text' tab generates randomized text by sampling
+                             from the report the algorithm generates. It uses the letter following frequencies
+                             to cause the text to have a similar profile to the input text.
+                             The user can control how much of this text 
+                             to generate.")
+                           ),
                   tabPanel("Text and Plots",
                            h2("Analysis Results:"),
                            plotOutput("word_plot"),
                            h4("Text Chosen:"),
                            textOutput("text_choice")
                   ),
-                  tabPanel("Randomly Generated Text"))
+                  tabPanel("Randomly Generated Text:",
+                      sliderInput("random_text_chars",
+                              label = "Characters of text to produce:",
+                              min = 10,
+                              max = 1000,
+                              value = 100,
+                              step = 1),
+                      actionButton(inputId = "gen_text",
+                               label = "Generate Text"),
+                      textOutput("random_text"))
+                  )
     )
   )
 )
@@ -182,6 +207,11 @@ observe({
   
   output$word_plot <- renderPlot(report_graph(word_data(internal_vars$text_selection()))[[input$graph_display]])
   })
+  
+###### Action button observer ######
+observeEvent(input$gen_text, {
+  output$random_text <- renderText(paste0("Example: ", sample(letters, 20)))
+})
  
 }
 
