@@ -25,7 +25,7 @@ ui <- fluidPage(
                    ),
       textInput(inputId = "custom",
                 label = "Enter the custom text here:",
-                value = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed turpis diam, pretium quis felis a, congue varius justo. Etiam sollicitudin ex et pretium varius."),
+                value = "The quick brown fox jumped over the lazy dog."),
       
       selectInput(inputId = "graph_display",
                   label = "Select the output to display:",
@@ -59,7 +59,7 @@ ui <- fluidPage(
                               "y",
                               "z"
                               ),
-                  selected = "beginning"
+                  selected = "wordlengths"
       )
     ),
     mainPanel(
@@ -89,9 +89,9 @@ ui <- fluidPage(
                       sliderInput("random_text_chars",
                               label = "Characters of text to produce:",
                               min = 10,
-                              max = 1000,
-                              value = 100,
-                              step = 1),
+                              max = 5000,
+                              value = 500,
+                              step = 10),
                       actionButton(inputId = "gen_text",
                                label = "Generate Text"),
                       textOutput("random_text"))
@@ -154,6 +154,23 @@ server <- function(input, output){
     return(following)
   }
   
+###### English-like nonsense generator ######
+  gen_random_text = function(longness, tx_report){
+    generated <- vector("character", length = longness)
+    generated[1] <- sample(tx_report$beginning, 1)
+    for(j in 2:longness){
+      priorchar <- generated[j-1]
+      if(priorchar != " "){
+        generated[j] <- sample(tx_report[[priorchar]], 1)
+      }
+      if(priorchar == " "){
+        generated[j] <- sample(tx_report$beginning, 1)
+      }
+    }
+    return(paste(generated, collapse = ""))
+  }
+  
+  
 ###### A function to create chart outputs ######
   report_graph <- function(report){
     list_of_plots <- list()
@@ -185,14 +202,14 @@ server <- function(input, output){
     gettysburg_address = readtext("ga.txt")$text,
     declaration_of_independence = readtext("doi.txt")$text
   )
+
+  internal_vars <- reactiveValues()
+  internal_vars$text_selection <- character()
+  internal_vars$word_report <- list()
   
 ###### Main Observer ######
 observe({
-  
-  internal_vars <- reactiveValues()
-  internal_vars$text_selection <- character()
-  internal_vars$word_lengths <- character()
-  
+
   ###### Text output widget. ######
   if(input$text_select == "custom"){
     internal_vars$text_selection <- renderText(input$custom)
@@ -202,15 +219,15 @@ observe({
   }
   output$text_choice <- internal_vars$text_selection
   
+  internal_vars$word_report <- word_data(internal_vars$text_selection())
   ###### The plot ###### 
-  internal_vars$word_lengths <- word_data(internal_vars$text_selection())[["wordlengths"]]
   
-  output$word_plot <- renderPlot(report_graph(word_data(internal_vars$text_selection()))[[input$graph_display]])
+  output$word_plot <- renderPlot(report_graph(internal_vars$word_report)[[input$graph_display]])
   })
   
 ###### Action button observer ######
 observeEvent(input$gen_text, {
-  output$random_text <- renderText(paste0("Example: ", sample(letters, 20)))
+  output$random_text <- renderText(gen_random_text(input$random_text_chars, internal_vars$word_report))
 })
  
 }
