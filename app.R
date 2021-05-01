@@ -81,7 +81,12 @@ ui <- fluidPage(
                            ),
                   tabPanel("Text and Plots",
                            h2("Analysis Results:"),
+                           p(),
+                           textOutput("mean_word_length"),
+                           textOutput("var_word_length"),
+                           p(),
                            plotOutput("word_plot"),
+                           p(),
                            h4("Text Chosen:"),
                            textOutput("text_choice")
                   ),
@@ -223,6 +228,11 @@ observe({
   ###### The plot ###### 
   
   output$word_plot <- renderPlot(report_graph(internal_vars$word_report)[[input$graph_display]])
+  
+  output$mean_word_length <- renderText(paste0("Mean word length: ", 
+                                               round(mean(internal_vars$word_report$wordlengths), digits = 2)))
+  output$var_word_length <- renderText(paste0("Word length variance: ", 
+                                               round(var(internal_vars$word_report$wordlengths), digits = 2)))
   })
   
 ###### Action button observer ######
